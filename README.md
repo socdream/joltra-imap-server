@@ -1,8 +1,8 @@
-# imap-server
+# joltra-imap-server
 
 IMAP Server module for Nodejs
 
-I needed an IMAP command parser and server which I could easily modify to integrate it in any storage system so I created this library which IMAP function can be easily overwritten.
+I needed an IMAP command parser and server which I could easily modify to integrate it in any storage system so I created this library in which every IMAP command can be easily overwritten.
 
 ## Installation
 
