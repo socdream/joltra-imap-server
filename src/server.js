@@ -35,8 +35,9 @@ function IMAPServer(imapPort){
 
         socket.receivedData = processedCommand.dataLeft;
 
-        if(processedCommand.command.length >= 2){
-          var commandResult = IMAPCommands[processedCommand.command[1]].callback(processedCommand.command);
+        if(IMAPCommands[processedCommand.command.command]){
+        	console.log("running: ", IMAPCommands[processedCommand.command.command]);
+          var commandResult = IMAPCommands[processedCommand.command.command].callback(processedCommand.command);
           socket.write(commandResult.message);
           if(commandResult.action) commandResult.action(socket);
         }
@@ -68,21 +69,16 @@ function IMAPServer(imapPort){
 exports.IMAPServer = IMAPServer;
 
 function ProcessCommand(data){
-
 	var offset = data.indexOf("\r\n");
-
+	
 	if(offset >= 0){
-
 		var fullCommand = data.substr(0, offset);
-
 		var params = fullCommand.split(" ");
 
-		return { command: { tag: command[0], command: command[1], args: commands.slice(2)}, dataLeft: data.substr(offset + 2)};
-
+		return { command: { tag: params[0], command: params[1], args: params.slice(2) }, dataLeft: data.substr(offset + 2)};
 	}
 
 	return null;
-
 }
 
 function NotImplementedCommand(command){
