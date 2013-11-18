@@ -22,10 +22,10 @@ ImapServer.IMAPServer();
 ```javascript
 //login function override
 function ImapLogin(command){
-  if(command[2] == "user" && command[3]=="pass"){
-    return { message: command[0] + " OK Welcome overwritten " + command[2] + "\r\n", action: function(socket){ socket.IMAPState = ImapServer.IMAPState.Authenticated; } };
+  if(command.args[0] == "user" && command.args[1]=="pass"){
+    return { message: command.tag + " OK Welcome overwritten " + command.args[0] + "\r\n", action: function(socket){ socket.IMAPState = ImapServer.IMAPState.Authenticated; } };
   }else{
-    return { message: command[0] + " NO Wrong user or password.\r\n" };
+    return { message: command.tag + " NO Wrong user or password.\r\n" };
   }
 }
 ImapServer.IMAPCommands.LOGIN.callback = ImapLogin;
