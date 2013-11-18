@@ -27,27 +27,27 @@ exports.SetDefaultCommands = function(){
 }
 
 function DefaultLogin(command){
-  if(command[2] == "user" && command[3]=="pass"){
-    return { message: command[0] + " OK Welcome " + command[2] + "\r\n", action: function(socket){ socket.IMAPState = IMAPServer.IMAPState.Authenticated; } };
+  if(command.args[0] == "user" && command.args[1]=="pass"){
+    return { message: command.tag + " OK Welcome " + command.args[0] + "\r\n", action: function(socket){ socket.IMAPState = IMAPServer.IMAPState.Authenticated; } };
   }else{
-    return { message: command[0] + " NO Wrong user or password.\r\n" };
+    return { message: command.tag + " NO Wrong user or password.\r\n" };
   }
 }
 
 function DefaultLogout(command){
-  return { message: "* BYE Logging out\r\n" + command[0] + " OK Logout completed\r\n", action:function(socket){socket.end();} };
+  return { message: "* BYE Logging out\r\n" + command.tag + " OK Logout completed\r\n", action:function(socket){socket.end();} };
 }
 
 function DefaultCapability(command){
-  return { message: "* CAPABILITY IMAP4rev1\r\n" + command[0] + " OK CAPABILITY completed\r\n" };
+  return { message: "* CAPABILITY IMAP4rev1\r\n" + command.tag + " OK CAPABILITY completed\r\n" };
 }
 
 function DefaultNoop(command){
-  return{ message: command[0] + " OK NOOP completed" };
+  return{ message: command.tag + " OK NOOP completed" };
 }
 
 function DefaultSelect(command){
-  var mailbox = command[2];
+  var mailbox = command.args[0];
 
   //get existent messages in mailbox
   var numExist = 0;
@@ -69,13 +69,13 @@ function DefaultSelect(command){
 
   res += "* OK [PERMANENTFLAGS (\Deleted \Seen \*)] Limited\r\n";
 
-  res += command[0] + " OK [READ-WRITE] SELECT completed\r\n";
+  res += command.tag + " OK [READ-WRITE] SELECT completed\r\n";
 
   return { message: res };
 }
 
 function DefaultExamine(command){
-  var mailbox = command[2];
+  var mailbox = command.args[0];
 
   //get existent messages in mailbox
   var numExist = 0;
@@ -97,7 +97,7 @@ function DefaultExamine(command){
 
   res += "* OK [PERMANENTFLAGS ()] No permanent flags permitted\r\n";
 
-  res += command[0] + " OK [READ-ONLY] EXAMINE completed\r\n";
+  res += command.tag + " OK [READ-ONLY] EXAMINE completed\r\n";
 
   return { message: res };
 }
@@ -110,35 +110,35 @@ function DefaultCreate(command){
 }
 
 function DefaultDelete(command){
-  var mailbox = command[2];
+  var mailbox = command.args[0];
 }
 
 function DefaultRename(command){
-	var origin = command[2];
-	var destination = command[3];
+	var origin = command.args[0];
+	var destination = command.args[1];
 	var canCopy = false;
 	if(canCopy){
-		return { message: command[0] + "OK RENAME completed\r\n" };
+		return { message: command.tag + "OK RENAME completed\r\n" };
 	}else{
-		return { message: command[0] + "NO RENAME failure\r\n" };
+		return { message: command.tag + "NO RENAME failure\r\n" };
 	}
 }
 
 function DefaultSubscribe(command){
 	var canSubscribe = false;
 	if(canSubscribe){
-		return { message: command[0] + "OK SUBSCRIBE completed\r\n" };
+		return { message: command.tag + "OK SUBSCRIBE completed\r\n" };
 	}else{
-		return { message: command[0] + "NO SUBSCRIBE failure: can't subscribe to that name\r\n" };
+		return { message: command.tag + "NO SUBSCRIBE failure: can't subscribe to that name\r\n" };
 	}
 }
 
 function DefaultUnsubscribe(command){
 	var canSubscribe = false;
 	if(canSubscribe){
-		return { message: command[0] + "OK UNSUBSCRIBE completed\r\n" };
+		return { message: command.tag + "OK UNSUBSCRIBE completed\r\n" };
 	}else{
-		return { message: command[0] + "NO UNSUBSCRIBE failure: can't unsubscribe to that name\r\n" };
+		return { message: command.tag + "NO UNSUBSCRIBE failure: can't unsubscribe to that name\r\n" };
 	}
 }
 
@@ -151,10 +151,10 @@ function DefaultLsub(command){
 }
 
 function DefaultStatus(command){
-	var mailbox = command[2];
+	var mailbox = command.args[0];
 	var res = "";
-	for(var i = 3; i<command.length; i++){
-		var request = command[i].replace("(", "").replace(")", "");
+	for(var i = 0; i<command.args.length; i++){
+		var request = command.args[i].replace("(", "").replace(")", "");
 		switch(request){
 			case "MESSAGES":
 				var numMessages = 0;
@@ -178,7 +178,7 @@ function DefaultStatus(command){
 				break;
 		}//switch
 	}//for
-	return { message: "* STATUS " + command[2] + "(" + res + ")\r\n" + command[0] + " OK STATUS completed\r\n" };
+	return { message: "* STATUS " + command.args[0] + "(" + res + ")\r\n" + command.tag + " OK STATUS completed\r\n" };
 }
 
 function DefaultAppend(command){
@@ -186,12 +186,12 @@ function DefaultAppend(command){
 }
 
 function DefaultCheck(command){
-	return { message: command[0] + " OK CHECK completed\r\n"};
+	return { message: command.tag + " OK CHECK completed\r\n"};
 }
 
 function DefaultClose(command){
 	//delete messages and return to authenticated
-	return { message: command[0] + " OK CLOSE completed\r\n", action: function(socket){ socket.IMAPState = IMAPServer.IMAPState.Authenticated; } };
+	return { message: command.tag + " OK CLOSE completed\r\n", action: function(socket){ socket.IMAPState = IMAPServer.IMAPState.Authenticated; } };
 }
 
 function DefaultExpunge(command){
@@ -202,7 +202,7 @@ function DefaultExpunge(command){
 		var id = 0;
 		res += "* " + id + " EXPUNGE\r\n";
 	}
-	return { message: res + command[0] + " OK EXPUNGE completed\r\n"};
+	return { message: res + command.tag + " OK EXPUNGE completed\r\n"};
 }
 
 function DefaultSearch(command){
@@ -218,17 +218,17 @@ function DefaultStore(command){
 }
 
 function DefaultCopy(command){
-	var destMailbox = command[3];
-	var msgIds = command[2].split(":");
+	var destMailbox = command.args[1];
+	var msgIds = command.args[0].split(":");
 	for(var i = parseInt(msgIds[0]); i <= parseInt(msgIds[1]); i++){
 		//copy message
 	}
 	
 	var copied = false;
 	if(copied){
-		return { message: command[0] + " OK COPY completed\r\n"};
+		return { message: command.tag + " OK COPY completed\r\n"};
 	}else{
-		return { message: command[0] + " NO COPY error: can't copy those messages or to that name\r\n"};
+		return { message: command.tag + " NO COPY error: can't copy those messages or to that name\r\n"};
 	}
 }
 

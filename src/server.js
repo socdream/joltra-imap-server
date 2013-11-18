@@ -77,7 +77,7 @@ function ProcessCommand(data){
 
 		var params = fullCommand.split(" ");
 
-		return { command: params, dataLeft: data.substr(offset + 2)};
+		return { command: { tag: command[0], command: command[1], args: commands.slice(2)}, dataLeft: data.substr(offset + 2)};
 
 	}
 
@@ -86,7 +86,7 @@ function ProcessCommand(data){
 }
 
 function NotImplementedCommand(command){
-  return { message: command[0] + " BAD Not Implemented Command.\r\n", action: function(socket){} };
+  return { message: command.tag + " BAD Not Implemented Command.\r\n", action: function(socket){} };
 }
 exports.NotImplementedCommand = NotImplementedCommand;
 
