@@ -26,27 +26,29 @@ exports.SetDefaultCommands = function(){
   //IMAPServer.IMAPCommands.UID.callback = DefaultUid;
 }
 
-function DefaultLogin(command){
+function DefaultLogin(command, socket){
   if(command.args[0] == "user" && command.args[1]=="pass"){
-    return { message: command.tag + " OK Welcome " + command.args[0] + "\r\n", action: function(socket){ socket.IMAPState = IMAPServer.IMAPState.Authenticated; } };
+  	socket.IMAPState = IMAPServer.IMAPState.Authenticated;
+    socket.write(command.tag + " OK Welcome " + command.args[0] + "\r\n");
   }else{
-    return { message: command.tag + " NO Wrong user or password.\r\n" };
+    socket.write(command.tag + " NO Wrong user or password.\r\n");
   }
 }
 
-function DefaultLogout(command){
-  return { message: "* BYE Logging out\r\n" + command.tag + " OK Logout completed\r\n", action:function(socket){socket.end();} };
+function DefaultLogout(command, socket){
+  socket.write("* BYE Logging out\r\n" + command.tag + " OK Logout completed\r\n");
+  socket.end();
 }
 
-function DefaultCapability(command){
-  return { message: "* CAPABILITY IMAP4rev1\r\n" + command.tag + " OK CAPABILITY completed\r\n" };
+function DefaultCapability(command, socket){
+  socket.write("* CAPABILITY IMAP4rev1\r\n" + command.tag + " OK CAPABILITY completed\r\n");
 }
 
-function DefaultNoop(command){
-  return{ message: command.tag + " OK NOOP completed" };
+function DefaultNoop(command, socket){
+  socket.write(command.tag + " OK NOOP completed");
 }
 
-function DefaultSelect(command){
+function DefaultSelect(command, socket){
   var mailbox = command.args[0];
 
   //get existent messages in mailbox
@@ -71,10 +73,10 @@ function DefaultSelect(command){
 
   res += command.tag + " OK [READ-WRITE] SELECT completed\r\n";
 
-  return { message: res };
+  socket.write(res);
 }
 
-function DefaultExamine(command){
+function DefaultExamine(command, socket){
   var mailbox = command.args[0];
 
   //get existent messages in mailbox
@@ -99,58 +101,58 @@ function DefaultExamine(command){
 
   res += command.tag + " OK [READ-ONLY] EXAMINE completed\r\n";
 
-  return { message: res };
+  socket.write(res);
 }
 
-function DefaultCreate(command){
+function DefaultCreate(command, socket){
   /*C: A003 CREATE owatagusiam/
   S: A003 OK CREATE completed
   C: A004 CREATE owatagusiam/blurdybloop
   S: A004 OK CREATE completed*/
 }
 
-function DefaultDelete(command){
+function DefaultDelete(command, socket){
   var mailbox = command.args[0];
 }
 
-function DefaultRename(command){
+function DefaultRename(command, socket){
 	var origin = command.args[0];
 	var destination = command.args[1];
 	var canCopy = false;
 	if(canCopy){
-		return { message: command.tag + "OK RENAME completed\r\n" };
+		socket.write(command.tag + "OK RENAME completed\r\n");
 	}else{
-		return { message: command.tag + "NO RENAME failure\r\n" };
+		socket.write(command.tag + "NO RENAME failure\r\n");
 	}
 }
 
-function DefaultSubscribe(command){
+function DefaultSubscribe(command, socket){
 	var canSubscribe = false;
 	if(canSubscribe){
-		return { message: command.tag + "OK SUBSCRIBE completed\r\n" };
+		socket.write(command.tag + "OK SUBSCRIBE completed\r\n");
 	}else{
-		return { message: command.tag + "NO SUBSCRIBE failure: can't subscribe to that name\r\n" };
+		socket.write(command.tag + "NO SUBSCRIBE failure: can't subscribe to that name\r\n");
 	}
 }
 
-function DefaultUnsubscribe(command){
+function DefaultUnsubscribe(command, socket){
 	var canSubscribe = false;
 	if(canSubscribe){
-		return { message: command.tag + "OK UNSUBSCRIBE completed\r\n" };
+		socket.write(command.tag + "OK UNSUBSCRIBE completed\r\n");
 	}else{
-		return { message: command.tag + "NO UNSUBSCRIBE failure: can't unsubscribe to that name\r\n" };
+		socket.write(command.tag + "NO UNSUBSCRIBE failure: can't unsubscribe to that name\r\n");
 	}
 }
 
-function DefaultList(command){
+function DefaultList(command, socket){
 	
 }
 
-function DefaultLsub(command){
+function DefaultLsub(command, socket){
 	
 }
 
-function DefaultStatus(command){
+function DefaultStatus(command, socket){
 	var mailbox = command.args[0];
 	var res = "";
 	for(var i = 0; i<command.args.length; i++){
@@ -178,23 +180,24 @@ function DefaultStatus(command){
 				break;
 		}//switch
 	}//for
-	return { message: "* STATUS " + command.args[0] + "(" + res + ")\r\n" + command.tag + " OK STATUS completed\r\n" };
+	socket.write("* STATUS " + command.args[0] + "(" + res + ")\r\n" + command.tag + " OK STATUS completed\r\n");
 }
 
-function DefaultAppend(command){
+function DefaultAppend(command, socket){
 	
 }
 
-function DefaultCheck(command){
-	return { message: command.tag + " OK CHECK completed\r\n"};
+function DefaultCheck(command, socket){
+	socket.write(command.tag + " OK CHECK completed\r\n");
 }
 
-function DefaultClose(command){
+function DefaultClose(command, socket){
 	//delete messages and return to authenticated
-	return { message: command.tag + " OK CLOSE completed\r\n", action: function(socket){ socket.IMAPState = IMAPServer.IMAPState.Authenticated; } };
+	socket.write(command.tag + " OK CLOSE completed\r\n");
+	socket.IMAPState = IMAPServer.IMAPState.Authenticated;
 }
 
-function DefaultExpunge(command){
+function DefaultExpunge(command, socket){
 	var messagesFlagged = [];
 	var res = "";
 	for(var i = 0; i<messagesFlagged.length; i++){
@@ -202,22 +205,22 @@ function DefaultExpunge(command){
 		var id = 0;
 		res += "* " + id + " EXPUNGE\r\n";
 	}
-	return { message: res + command.tag + " OK EXPUNGE completed\r\n"};
+	socket.write(res + command.tag + " OK EXPUNGE completed\r\n");
 }
 
-function DefaultSearch(command){
+function DefaultSearch(command, socket){
 	
 }
 
-function DefaultFetch(command){
+function DefaultFetch(command, socket){
 	
 }
 
-function DefaultStore(command){
+function DefaultStore(command, socket){
 	
 }
 
-function DefaultCopy(command){
+function DefaultCopy(command, socket){
 	var destMailbox = command.args[1];
 	var msgIds = command.args[0].split(":");
 	for(var i = parseInt(msgIds[0]); i <= parseInt(msgIds[1]); i++){
@@ -226,12 +229,12 @@ function DefaultCopy(command){
 	
 	var copied = false;
 	if(copied){
-		return { message: command.tag + " OK COPY completed\r\n"};
+		socket.write(command.tag + " OK COPY completed\r\n");
 	}else{
-		return { message: command.tag + " NO COPY error: can't copy those messages or to that name\r\n"};
+		socket.write(command.tag + " NO COPY error: can't copy those messages or to that name\r\n");
 	}
 }
 
-function DefaultUid(command){
+function DefaultUid(command, socket){
 	
 }

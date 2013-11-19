@@ -36,10 +36,8 @@ function IMAPServer(imapPort){
         socket.receivedData = processedCommand.dataLeft;
 
         if(IMAPCommands[processedCommand.command.command]){
-        	console.log("running: ", IMAPCommands[processedCommand.command.command]);
-          var commandResult = IMAPCommands[processedCommand.command.command].callback(processedCommand.command);
-          socket.write(commandResult.message);
-          if(commandResult.action) commandResult.action(socket);
+          console.log("running: ", IMAPCommands[processedCommand.command.command]);
+          IMAPCommands[processedCommand.command.command].callback(processedCommand.command, socket);
         }
       }
     });
@@ -81,8 +79,8 @@ function ProcessCommand(data){
 	return null;
 }
 
-function NotImplementedCommand(command){
-  return { message: command.tag + " BAD Not Implemented Command.\r\n", action: function(socket){} };
+function NotImplementedCommand(command, socket){
+   socket.write(command.tag + " BAD Not Implemented Command.\r\n");
 }
 exports.NotImplementedCommand = NotImplementedCommand;
 

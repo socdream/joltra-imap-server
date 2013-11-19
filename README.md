@@ -21,11 +21,12 @@ ImapServer.IMAPServer();
 
 ```javascript
 //login function override
-function ImapLogin(command){
+function ImapLogin(command, socket){
   if(command.args[0] == "user" && command.args[1]=="pass"){
-    return { message: command.tag + " OK Welcome overwritten " + command.args[0] + "\r\n", action: function(socket){ socket.IMAPState = ImapServer.IMAPState.Authenticated; } };
+    socket.write(command.tag + " OK Welcome overwritten " + command.args[0] + "\r\n");
+    socket.IMAPState = ImapServer.IMAPState.Authenticated;
   }else{
-    return { message: command.tag + " NO Wrong user or password.\r\n" };
+    socket.write(command.tag + " NO Wrong user or password.\r\n");
   }
 }
 ImapServer.IMAPCommands.LOGIN.callback = ImapLogin;
