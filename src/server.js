@@ -1,6 +1,6 @@
 // Load the TCP Library
 net = require('net');
- 
+
 // Keep track of the chat clients
 var clients = [];
 
@@ -14,7 +14,7 @@ function IMAPServer(imapPort){
 
   // Start a TCP Server
   net.createServer(function (socket) {
- 
+
     // Identify this client
     socket.name = socket.remoteAddress + ":" + socket.remotePort;
     socket.receivedData = "";
@@ -22,10 +22,10 @@ function IMAPServer(imapPort){
 
     // Put this new client in the list
     clients.push(socket);
- 
+
     // Send a nice welcome message
     socket.write("* OK [CAPABILITY IMAP4REV1] Welcome " + socket.name + "\r\n");
- 
+
     // Handle incoming messages from clients.
     socket.on('data', function (data) {
       socket.receivedData += data;
@@ -38,16 +38,18 @@ function IMAPServer(imapPort){
         if(IMAPCommands[processedCommand.command.command]){
           console.log("running: ", IMAPCommands[processedCommand.command.command]);
           IMAPCommands[processedCommand.command.command].callback(processedCommand.command, socket);
+        } else {
+          console.error("Unknown command '"+ processedCommand.command.command +"'");
         }
       }
     });
- 
+
     // Remove the client from the list when it leaves
     socket.on('end', function () {
       clients.splice(clients.indexOf(socket), 1);
       console.log(socket.name + " disconnected.\r\n");
     });
-  
+
     // Send a message to all clients
     function broadcast(message, sender) {
       clients.forEach(function (client) {
@@ -58,7 +60,7 @@ function IMAPServer(imapPort){
       // Log it to the server output too
       process.stdout.write(message)
     }
- 
+
   }).listen(imapPort);
 
   // Put a friendly message on the terminal of the server.
@@ -68,12 +70,19 @@ exports.IMAPServer = IMAPServer;
 
 function ProcessCommand(data){
 	var offset = data.indexOf("\r\n");
-	
+
 	if(offset >= 0){
 		var fullCommand = data.substr(0, offset);
 		var params = fullCommand.split(" ");
 
-		return { command: { tag: params[0], command: params[1], args: params.slice(2) }, dataLeft: data.substr(offset + 2)};
+		return {
+      command: {
+        tag: params[0],
+        command: params[1].toUpperCase(),
+        args: params.slice(2)
+      },
+      dataLeft: data.substr(offset + 2)
+    };
 	}
 
 	return null;
