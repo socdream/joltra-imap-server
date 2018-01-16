@@ -5,7 +5,7 @@ exports.IMAPState = IMAPServer.IMAPState;
 
 //default port is 143
 exports.IMAPServer = function(imapPort){
-  IMAPServer.IMAPServer();
+  IMAPServer.IMAPServer(imapPort);
   var IMAPState = IMAPServer.IMAPState;
 
   var DefaultCommands = require("./src/defaultcommands.js");
